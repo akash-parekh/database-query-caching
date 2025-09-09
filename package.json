@@ -1,0 +1,26 @@
+{
+    "name": "database-query-caching",
+    "version": "1.0.0",
+    "description": "## 📖 Overview",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/akash-parekh/database-query-caching.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/akash-parekh/database-query-caching/issues"
+    },
+    "homepage": "https://github.com/akash-parekh/database-query-caching#readme",
+    "dependencies": {
+        "dotenv": "^17.2.2",
+        "express": "^5.1.0",
+        "pg": "^8.16.3",
+        "redis": "^5.8.2"
+    },
+    "type": "module"
+}
