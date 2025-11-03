@@ -1,6 +1,9 @@
 import dotenv from "dotenv";
 import { connectWithRetry, createRedisClient } from "./src/config/redis.js";
-import { createPostgresPool } from "./src/config/db.js";
+import {
+    createPostgresPool,
+    ensureProductsTableAndData,
+} from "./src/config/db.js";
 import { createApp } from "./src/app.js";
 dotenv.config();
 
@@ -30,6 +33,8 @@ const pgPool = createPostgresPool({
     port: PGPORT,
 });
 
+await ensureProductsTableAndData(pgPool);
+
 // APP CONFIG
 const PORT = process.env.PORT || 5000;
 
@@ -37,7 +42,7 @@ async function start() {
     await connectWithRetry(redisClient);
     const app = createApp({ redisClient, pgPool });
     app.listen(PORT, () => {
-        console.log("Server Running at http://localhost:3000");
+        console.log(`Server Running at http://localhost:${PORT}`);
     });
 }
 

@@ -5,6 +5,15 @@ export const healthRouter = ({ redisClient, pgPool }) => {
     const router = Router();
 
     router.get(
+        "/",
+        asyncWrapper(async (req, res) => {
+            await pgPool.query("SELECT 1");
+            await redisClient.ping();
+            res.json({ status: "OK", service: "All" });
+        }),
+    );
+
+    router.get(
         "/db",
         asyncWrapper(async (req, res) => {
             await pgPool.query("SELECT 1");
