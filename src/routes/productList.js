@@ -5,6 +5,7 @@ import {
     productSchema,
     productUpdateSchema,
 } from "../schemas/productSchema.js";
+import { ka } from "zod/locales";
 
 export const productListRouter = ({ pgPool, redisClient }) => {
     const router = Router();
@@ -20,6 +21,13 @@ export const productListRouter = ({ pgPool, redisClient }) => {
     const cacheGet = async (key) => {
         const data = await redisClient.get(key);
         return data ? JSON.parse(data) : null;
+    };
+
+    const invalidateProductCache = async (id) => {
+        await Promise.all([
+            redisClient.del(`products:${id}`),
+            redisClient.del("products:all"),
+        ]);
     };
 
     router.get(
@@ -102,7 +110,7 @@ export const productListRouter = ({ pgPool, redisClient }) => {
 
             // Cache the newly created product and invalidate the cached product list
             await cacheSet(`products:${createdProduct.id}`, createdProduct);
-            await redisClient.del("products:all");
+            await invalidateProductCache(createdProduct.id);
 
             res.status(201).json({
                 message: "Product created",
@@ -145,12 +153,14 @@ export const productListRouter = ({ pgPool, redisClient }) => {
                 const { rows } = await pgPool.query(queryText, [...values, id]);
 
                 if (rows.length === 0) {
-                    return res.status(404).json({ error: "Product not found" });
+                    return res.status(200).json({
+                        message: "Product not found (already deleted)",
+                    });
                 }
 
                 // Update cache for this product and invalidate product list cache
+                await invalidateProductCache(id);
                 await cacheSet(`products:${id}`, rows[0]);
-                await redisClient.del("products:all");
 
                 res.status(200).json({
                     message: "Product updated successfully",
@@ -159,6 +169,35 @@ export const productListRouter = ({ pgPool, redisClient }) => {
             } catch (err) {
                 console.error("Error updating product:", err);
                 res.status(500).json({ error: "Database error" });
+            }
+        }),
+    );
+
+    router.delete(
+        "/deleteProduct/:id",
+        asyncWrapper(async (req, res) => {
+            const id = parseInt(req.params.id, 10);
+            if (Number.isNaN(id) || id <= 0) {
+                return res.status(400).json({ error: "Invalid product id" });
+            }
+            const queryText = "DELETE FROM products WHERE id = $1 RETURNING *";
+            try {
+                const { rows } = await pgPool.query(queryText, [id]);
+                if (rows.length === 0) {
+                    return res.status(404).json({ error: "Product not found" });
+                }
+                await invalidateProductCache(id);
+                res.status(200).json({
+                    message: "Product deleted successfully",
+                    deleted: rows[0],
+                });
+            } catch (err) {
+                console.error("❌ Error deleting product:", {
+                    id,
+                    message: err.message,
+                    stack: err.stack,
+                });
+                return res.status(500).json({ error: "Database error" });
             }
         }),
     );
