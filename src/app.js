@@ -2,6 +2,7 @@ import express from "express";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { healthRouter } from "./routes/health.js";
 import { productListRouter } from "./routes/productList.js";
+import { swaggerDocs } from "../swagger.js";
 
 export const createApp = ({ redisClient, pgPool }) => {
     const app = express();
@@ -9,5 +10,6 @@ export const createApp = ({ redisClient, pgPool }) => {
     app.use("/health", healthRouter({ redisClient, pgPool }));
     app.use("/products", productListRouter({ pgPool, redisClient }));
     app.use(errorHandler);
+    swaggerDocs(app);
     return app;
 };
