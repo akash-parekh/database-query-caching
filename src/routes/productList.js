@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { asyncWrapper } from "../middleware/asyncWrapper.js";
+import { validateBody } from "../middleware/validateBody.js";
+import { productSchema } from "../schemas/productSchema.js";
 
 export const productListRouter = ({ pgPool, redisClient }) => {
     const router = Router();
@@ -76,6 +78,33 @@ export const productListRouter = ({ pgPool, redisClient }) => {
                 console.error("Error fetching product: ", err);
                 res.status(500).json({ error: "Internal Server Error" });
             }
+        }),
+    );
+
+    router.post(
+        "/addProduct",
+        validateBody(productSchema),
+        asyncWrapper(async (req, res) => {
+            const productData = req.validatedBody;
+            const queryText = `INSERT INTO products (name, description, quantity, price, category) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+            const queryValues = [
+                productData.name,
+                productData.description,
+                productData.quantity,
+                productData.price,
+                productData.category,
+            ];
+            const result = await pgPool.query(queryText, queryValues);
+            const createdProduct = result.rows[0];
+
+            // Cache the newly created product and invalidate the cached product list
+            await cacheSet(`products:${createdProduct.id}`, createdProduct);
+            await redisClient.del("products:all");
+
+            res.status(201).json({
+                message: "Product created",
+                product: createdProduct,
+            });
         }),
     );
 
