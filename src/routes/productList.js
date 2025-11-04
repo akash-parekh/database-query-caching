@@ -5,7 +5,6 @@ import {
     productSchema,
     productUpdateSchema,
 } from "../schemas/productSchema.js";
-import { ka } from "zod/locales";
 
 export const productListRouter = ({ pgPool, redisClient }) => {
     const router = Router();
@@ -93,7 +92,7 @@ export const productListRouter = ({ pgPool, redisClient }) => {
     );
 
     router.post(
-        "/addProduct",
+        "/",
         validateBody(productSchema),
         asyncWrapper(async (req, res) => {
             const productData = req.validatedBody;
@@ -120,7 +119,7 @@ export const productListRouter = ({ pgPool, redisClient }) => {
     );
 
     router.put(
-        "/updateProduct/:id",
+        "/:id",
         validateBody(productUpdateSchema),
         asyncWrapper(async (req, res) => {
             const { id } = req.params;
@@ -174,7 +173,7 @@ export const productListRouter = ({ pgPool, redisClient }) => {
     );
 
     router.delete(
-        "/deleteProduct/:id",
+        "/:id",
         asyncWrapper(async (req, res) => {
             const id = parseInt(req.params.id, 10);
             if (Number.isNaN(id) || id <= 0) {

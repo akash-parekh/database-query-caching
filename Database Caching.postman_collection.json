@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "32901f6d-5802-4b91-9391-6d1f91567622",
+		"name": "Database Caching",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48130015",
+		"_collection_link": "https://parekh18dev-624776.postman.co/workspace/Akash-Parekh's-Workspace~f975cee7-ac64-4f44-8bb4-540244ae7752/collection/48130015-32901f6d-5802-4b91-9391-6d1f91567622?action=share&source=collection_link&creator=48130015"
+	},
+	"item": [
+		{
+			"name": "Health check",
+			"item": [
+				{
+					"name": "Postgres DB",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/health/db",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"health",
+								"db"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Redis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/health/redis",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"health",
+								"redis"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product Details",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Product Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products/7",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Product\",\n    \"description\": \"This is a test Product\",\n    \"quantity\": 1,\n    \"price\": 2,\n    \"category\": \"Test Category\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/7",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products/7",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"7"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "localhost:5000",
+			"type": "string"
+		}
+	]
+}
