@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { asyncWrapper } from "../middleware/asyncWrapper.js";
 import { validateBody } from "../middleware/validateBody.js";
-import { productSchema } from "../schemas/productSchema.js";
+import {
+    productSchema,
+    productUpdateSchema,
+} from "../schemas/productSchema.js";
 
 export const productListRouter = ({ pgPool, redisClient }) => {
     const router = Router();
@@ -105,6 +108,58 @@ export const productListRouter = ({ pgPool, redisClient }) => {
                 message: "Product created",
                 product: createdProduct,
             });
+        }),
+    );
+
+    router.put(
+        "/updateProduct/:id",
+        validateBody(productUpdateSchema),
+        asyncWrapper(async (req, res) => {
+            const { id } = req.params;
+            const updates = req.validatedBody;
+
+            if (!id) {
+                return res.status(400).json({ error: "Invalid product id" });
+            }
+
+            // Ensure at least one field is provided
+            const keys = Object.keys(updates);
+            if (keys.length === 0) {
+                return res
+                    .status(400)
+                    .json({ error: "No fields provided to update" });
+            }
+
+            // Build dynamic SQL query
+            // Example result: "UPDATE products SET name=$1, price=$2 WHERE id=$3"
+            const setClauses = keys.map((key, i) => `${key} = $${i + 1}`);
+            const values = Object.values(updates);
+            const queryText = `
+                UPDATE products
+                SET ${setClauses.join(", ")}
+                WHERE id = $${keys.length + 1}
+                RETURNING *;
+                `;
+
+            try {
+                const { rows } = await pgPool.query(queryText, [...values, id]);
+
+                if (rows.length === 0) {
+                    return res.status(404).json({ error: "Product not found" });
+                }
+
+                // Update cache for this product and invalidate product list cache
+                await cacheSet(`products:${id}`, rows[0]);
+                await redisClient.del("products:all");
+
+                res.status(200).json({
+                    message: "Product updated successfully",
+                    product: rows[0],
+                });
+            } catch (err) {
+                console.error("Error updating product:", err);
+                res.status(500).json({ error: "Database error" });
+            }
         }),
     );
 
